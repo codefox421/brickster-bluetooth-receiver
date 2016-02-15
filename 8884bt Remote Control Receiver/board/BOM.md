@@ -8,21 +8,20 @@ Listed here is a complete bill of materials for assembling one bluetooth receive
 
 ## 8884bt Bluetooth Receiver
 
-+ **U1** ATtiny84 SOIC14 (ATTINY84-20SSUR)
-+ **U2** MotorDriver SOP16 (DRV8833PWPR)
++ **U1** ATtiny841 SOIC14 (ATTINY841-SSU)
++ **U2** MotorDriver 24-WFQFN (LV8402GP-TE-L-H)
 + **U3** Regulator3.3V SOT223 (NCP1117ST33T3G)
-+ **U4** BluetoothModule SMD34 (HC-06)
++ **U4** BluetoothModule SMD16 (HM-13)
 
-+ **B2/B3/B4** BridgeRectifier MBS-2 (CDBHM240L-HF)
++ **Q1** MOSFET2N+2P SOIC8 (DMHC3025LSD-13)
 
-+ **D1** BlueLED 0805 (150080BS75000)
++ **D1** Blue/OrangeLED 0605 (LTST-C195TBKFKT)
 
-+ **C1** CapCer0.1uF 0805 (CC0805ZRY5V9BB104)
-+ **C2/C5** CapCer10uF 1206 (CL31F106ZOHNNNE)
-+ **C3** CapCer10000pF 0805 (CC0805KRX7R9BB103)
-+ **C4** CapCer2.2uF 0805 (CL21F225ZOFNNNE)
++ **C1/C4** CapCer0.1µF 0402 (GRM155R71C104KA88D) _or similar_
++ **C2** CapCer100µF 1206 (GRM31CE70G107ME39L) _or similar_
++ **C3** CapCer10nF 0402 (GRM155R71C103KA01D) _or similar_
 
-+ **R2** Res3.3kOhm 0805 (RMCF0805JT3K30)
++ **R1** Res10kOhm 0402 (RR0510P-103-D) _or similar_
++ **R2/R3** Res3.3kOhm 0402 (RR0510P-332-D) _or similar_
 
-+ **J1** ProgrammerICSP N/A (N/A) _used to program the ATtiny84, use of pogo pins is advised, no external power!_
-+ **J2/J3/J4** WirePF N/A ([8886](http://shop.lego.com/en-US/LEGO-Power-Functions-Extension-Wire-8886 "Power Functions Extension Wire") _or_ [8871](http://shop.lego.com/en-US/LEGO-Power-Functions-Extension-Wire-20-8871 "Power Functions Extension Wire 20"")) _octagon pads denote 9V, square pads denote GND_
++ **J1** ProgrammerICSP N/A (N/A) _used to program the ATtiny841, use of pogo pins is advised, no external power!_

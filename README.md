@@ -1,6 +1,6 @@
 # BricksTer &ndash; Bluetooth Receiver
 
-<img src="https://644db4de3505c40a0444-327723bce298e3ff5813fb42baeefbaa.ssl.cf1.rackcdn.com/uploads/project/top_image/jNrizzs2/i.png" alt="BricksTer Bluetooth Receiver top side" width="200">&nbsp;&nbsp;&nbsp;<img src="https://644db4de3505c40a0444-327723bce298e3ff5813fb42baeefbaa.ssl.cf1.rackcdn.com/uploads/project/bottom_image/jNrizzs2/i.png" alt="BricksTer Bluetooth Receiver bottom side" width="200">
+<img src="https://644db4de3505c40a0444-327723bce298e3ff5813fb42baeefbaa.ssl.cf1.rackcdn.com/1066fd61bf4fc966dde15363ef969d35.png" alt="BricksTer Bluetooth Receiver top side" width="200">&nbsp;&nbsp;&nbsp;<img src="https://644db4de3505c40a0444-327723bce298e3ff5813fb42baeefbaa.ssl.cf1.rackcdn.com/113c389456aa79294e2958224b0012ce.png" alt="BricksTer Bluetooth Receiver bottom side" width="200">
 
 The BricksTer Bluetooth Receiver lets you wirelessly control your LEGO creations from a smart phone, tablet, or PC. It is compatible with the NXT programmable brick. This repository houses the Eagle CAD schematic and design files for the printed circuit board along with the firmware for the receiver.
 
@@ -8,20 +8,20 @@ The BricksTer Bluetooth Receiver lets you wirelessly control your LEGO creations
 
 ### Part List
 
-Components can be ordered from any distributor (e.g. DigiKey, Mouser, etc).  
+Components can be ordered from any distributor (e.g. DigiKey, Mouser, etc).
 [Please see the Bill of Materials for the list of components.](https://github.com/BTbricks/brickster-bluetooth-receiver/blob/master/8884bt%20Remote%20Control%20Receiver/board/BOM.md)
 
-The rev. 2 board can be purchased from OSH Park.  
+The rev. 2 board can be purchased from OSH Park.
 [Click here to view the OSH Park project page.](https://oshpark.com/shared_projects/jNrizzs2)
 
 ### Programming the Board
 
-Once your board is soldered, use the Arduino IDE to load the firmware onto the microcontroller.  
+Once your board is soldered, use the Arduino IDE to load the firmware onto the microcontroller.
 The IDE is available for free and can be downloaded from http://arduino.cc/main/software
 
 #### Setting up the Arduino Environment
 
-The microcontroller is an ATtiny84, which is not regularly supported by the Arduino IDE.  
+The microcontroller is an ATtiny84, which is not regularly supported by the Arduino IDE.
 [Please visit the Arduino support page to learn more about using Arduino with the ATtiny84.](http://playground.arduino.cc/Main/ArduinoOnOtherAtmelChips)
 
 Download the [Attiny 44/45/84/85 files](https://github.com/damellis/attiny/archive/master.zip) and extract them to `{ARDUINO}/hardware/`, where `{ARDUINO}` represents the directory into which the Arduino IDE and supporting files have been installed. Once completed, your directory should look like this:
@@ -65,10 +65,16 @@ Note: Use of a Atmel AVRISPmk2 programmer is strongly advised. Other programmers
 
 ### File Formats
 
-Design files are created in CadSoft Eagle PCB Design Software.  
+Design files are created in CadSoft Eagle PCB Design Software.
 A free version of the software can be downloaded from www.cadsoftusa.com
 
-<img src="https://raw.githubusercontent.com/BTbricks/brickster-bluetooth-receiver/master/8884bt%20Remote%20Control%20Receiver/board/brickster-8884bt-sch.png" alt="BricksTer Bluetooth Receiver schematic" width="380">&nbsp;&nbsp;&nbsp;<img src="https://raw.githubusercontent.com/BTbricks/brickster-bluetooth-receiver/master/8884bt%20Remote%20Control%20Receiver/board/brickster-8884bt-brd.png" alt="BricksTer Bluetooth Receiver board design" width="300">
+<img src="8884bt%20Remote%20Control%20Receiver/board/brickster-8884bt-sch.png" alt="BricksTer Bluetooth Receiver schematic" width="380">&nbsp;&nbsp;&nbsp;<img src="8884bt%20Remote%20Control%20Receiver/board/brickster-8884bt-brd.png" alt="BricksTer Bluetooth Receiver board design" width="300">
+
+## Ordering the PCB
+
+You can order the unpopulated printed circuit board from OSH Park by following the link below.
+
+<a href="https://oshpark.com/shared_projects/tWWWgV0f"><img src="https://a800d827b6de8403a51e-6ffc2e718631809086ea40332b2055f7.ssl.cf1.rackcdn.com/assets/badge-5b7ec47045b78aef6eb9d83b3bac6b1920de805e9a0c227658eac6e19a045b9c.png" alt="Order from OSH Park"></img></a>
 
 ## Distribution License
 
@@ -76,5 +82,5 @@ Where possible, this project uses the MIT license. [Please see the license file 
 
 ## Contributing
 
-The project is open to all issues and pull requests.  
+The project is open to all issues and pull requests.
 If you have any other questions or feedback, please [contact the project maintainers](https://github.com/orgs/BTbricks/members).
