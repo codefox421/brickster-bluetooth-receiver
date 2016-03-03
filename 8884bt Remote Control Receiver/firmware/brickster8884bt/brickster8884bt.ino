@@ -22,53 +22,98 @@
   SYSTEM.
 ------------------------------------------------------------------------------*/
 
-/*------------------
-  #### ATtiny84 ####
-  ------------------
-         ____       
-  VCC  <|*   |> GND 
-  IO10 <|    |> IO 0
-  IO 9 <|    |> IO 1
-  RST  <|    |> IO 2
-  IO 8 <|    |> IO 3
-  IO 7 <|    |> SCK 
-  MOSI <|____|> MISO
+/*-------------------
+  #### ATtiny841 ####
+  -------------------
+         ____
+  VCC  <|*   |> GND
+  IO 0 <|    |> IO10
+  IO 1 <|    |> IO 9
+  RST  <|    |> IO 8
+  IO 2 <|    |> IO 7
+  IO 3 <|    |> IO 6
+  IO 4 <|____|> IO 5
 
-  ------------------*/
+  -------------------*/
 
-/*----------------------------
-  #### Swap Motor Drivers ####
-  ----------------------------
-  
-  Regex:   ^( *)(.*tb6612fng)
-  Replace: $1//$2
-  
-  Regex:   ^( *)//(.*drv8833)
-  Replace: $1$2
-  
-  ----------------------------*/
 
-#include <SoftwareSerial.h>
-#define uSecCyc 870
+
+
+
+/*------------------------------------------------------------------------------
+
+  Override core timers
+
+------------------------------------------------------------------------------*/
+
+
+const uint8_t PROGMEM digital_pin_to_timer_PGM[] =
+{
+  NOT_ON_TIMER,
+  NOT_ON_TIMER,
+  TIMER0A, /* TOCC7 - this is the LED function so let's give it the least desirable timer */
+  TIMER2B, /* TOCC6 - this is the AUX function so let's arbitrarily give it TIMER2 */
+  TIMER2A, /* TOCC5 - this is the AUX function so let's arbitrarily give it TIMER2 */
+  TIMER0B, /* TOCC4 - this is the LED function so let's give it the least desirable timer */
+  TIMER1A, /* TOCC3 - this is the MOTOR function so let's arbitrarily give it TIMER1 */
+  TIMER1B, /* TOCC2 - this is the MOTOR function so let's arbitrarily give it TIMER1 */
+  NOT_ON_TIMER, //This could have pwm, but it's serial 0, and we only get PWM on 6 of the 8 pins at once.
+  NOT_ON_TIMER, //see above.
+  NOT_ON_TIMER,
+  NOT_ON_TIMER,
+};
+
+// ATtiny841 Datasheet Table 12-7, TOCCn pins can be assigned various OCnX.
+#define CORE_OC0A_PIN  PIN_B2 // TOCC7
+#define CORE_OC0B_PIN  PIN_A5 // TOCC4
+#define CORE_OC1A_PIN  PIN_A4 // TOCC3
+#define CORE_OC1B_PIN  PIN_A3 // TOCC2
+#define CORE_OC2A_PIN  PIN_A6 // TOCC5
+#define CORE_OC2B_PIN  PIN_A7 // TOCC6
+
+#define CORE_PWM0_PIN       CORE_OC0A_PIN
+#define CORE_PWM0_TIMER     0
+#define CORE_PWM0_CHANNEL   A
+
+#define CORE_PWM1_PIN       CORE_OC0B_PIN
+#define CORE_PWM1_TIMER     0
+#define CORE_PWM1_CHANNEL   B
+
+#define CORE_PWM2_PIN       CORE_OC1A_PIN
+#define CORE_PWM2_TIMER     1
+#define CORE_PWM2_CHANNEL   A
+
+#define CORE_PWM3_PIN       CORE_OC1B_PIN
+#define CORE_PWM3_TIMER     1
+#define CORE_PWM3_CHANNEL   B
+
+#define CORE_PWM4_PIN       CORE_OC2A_PIN
+#define CORE_PWM4_TIMER     2
+#define CORE_PWM4_CHANNEL   A
+
+#define CORE_PWM5_PIN       CORE_OC2B_PIN
+#define CORE_PWM5_TIMER     2
+#define CORE_PWM5_CHANNEL   B
+
+
+
+/*------------------------------------------------------------------------------
+
+  Definitions
+
+------------------------------------------------------------------------------*/
+
 
 // Motor control A
-//#define mcPin1A 1 // tb6612fng
-//#define mcPin2A 2 // tb6612fng
-//#define pwmPinA 3 // tb6612fng
-#define mcPin1A 10 // drv8833
-#define mcPin2A 9 // drv8833
-char pwmPinA = mcPin1A; // drv8833
+#define mcPin1A 6
+#define mcPin2A 7
 #define maxA 28
 char levelA = 0;
 int pwmA = 0;
 
 // Motor control B
-//#define mcPin1B 0 // tb6612fng
-//#define mcPin2B 8 // tb6612fng
-//#define pwmPinB 7 // tb6612fng
-#define mcPin1B 7 // drv8833
-#define mcPin2B 8 // drv8833
-char pwmPinB = mcPin1B; // drv8833
+#define mcPin1B 3
+#define mcPin2B 4
 #define maxB 28
 char levelB = 0;
 int pwmB = 0;
@@ -93,94 +138,86 @@ int pwmB = 0;
 
 // Combine Channel A command with Channel B command using logical OR
 
-// Software serial
-//#define rxPin 10 // tb6612fng
-//#define txPin 9 // tb6612fng
-#define rxPin 0 // drv8833
-#define txPin 1 // drv8833
+// Hardware serial
 #define baudRate 9600
-SoftwareSerial softSerial(rxPin, txPin);
 
 // Miscellanious
-#define btResetPin 3
+#define btResetPin 2
+#define btConnPin 1
 char incomingByte = 0;
 char maskedByte = 0;
-char serialRateLimiter = 0;
-// int pwmLevels[8] = {0, 218, 326, 435, 544, 653, 761, 870};
-int pwmLevels[29] = {0, 141, 168, 195, 222, 249, 276, 303, \
-                      330, 357, 384, 411, 438, 465, 492, \
-                      519, 546, 573, 600, 627, 654, 681, \
-                      708, 735, 762, 789, 816, 843, 870};
+int pwmLevels[29] = {0, 41,  49,  57,  64, \
+                        73,  81,  89,  97, \
+                       105, 113, 120, 128, \
+                       136, 144, 152, 160, \
+                       168, 175, 184, 192, \
+                       200, 208, 215, 223, \
+                       231, 239, 247, 255};
 
 // Function definitions
-void comboMode(const char, char*, const char, const char, \
-                const char, const char, const char, const char, \
-                const char, const char, const char, const char);
-void bitBangPwm(char, int, char, int);
+void comboMode(const char,      char*, const char, const char, \
+               const char, const char, const char, const char, \
+               const char, const char, const char, const char);
 
 
 
-/*----------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------
 
+  setup
+
+------------------------------------------------------------------------------*/
 
 
 void setup()
 {
+  // serial baudrate init
+  Serial.begin(baudRate);
+
   // bluetooth control init
   pinMode(btResetPin, OUTPUT);
   digitalWrite(btResetPin, HIGH); // end Bluetooth reset (enable module)
-  
+
+  // bluetooth connectivity init
+  pinMode(btConnPin, INPUT);
+  Serial.write("AT+LED1");
+
   // channel A init
   pinMode(mcPin1A, OUTPUT);
   pinMode(mcPin2A, OUTPUT);
-  pinMode(pwmPinA, OUTPUT);
-  digitalWrite(mcPin1A, LOW);
-  digitalWrite(mcPin2A, LOW);
-  digitalWrite(pwmPinA, LOW);
-  
+  digitalWrite(mcPin1A, HIGH);
+  digitalWrite(mcPin2A, HIGH);
+
   // channel B init
   pinMode(mcPin1B, OUTPUT);
   pinMode(mcPin2B, OUTPUT);
-  pinMode(pwmPinB, OUTPUT);
-  digitalWrite(mcPin1B, LOW);
-  digitalWrite(mcPin2B, LOW);
-  digitalWrite(pwmPinB, LOW);
-  
-  // bitbanged PWM init
-  pwmA = pwmLevels[min(abs(levelA), maxA)];
-  pwmB = pwmLevels[min(abs(levelB), maxB)];
-  
-  // serial init
-  softSerial.begin(baudRate);
+  digitalWrite(mcPin1B, HIGH);
+  digitalWrite(mcPin2B, HIGH);
 }
 
+
+
+/*------------------------------------------------------------------------------
+
+  loop
+
+------------------------------------------------------------------------------*/
 
 
 void loop()
 {
   // Handle serial communication
-  //   - software serial interferes with PWM
-  //   - limit to once every 8(?) loops
-  if (!serialRateLimiter && softSerial.available() > 0)
+  if (Serial.available() > 0)
   {
     // read incoming byte
-    incomingByte = softSerial.read();
-    
+    incomingByte = Serial.read();
+
 
     // Direct PWM mode (fine resolution)
     if (incomingByte & 128) // 1xxx xxxx
     {
-      // select proper output
+      // select proper output: x0xx xxxx -> A / x1xx xxxx -> B
       char* levelX = incomingByte & 64 ? &levelB : &levelA;
-      if ((incomingByte & 63) < 29 || (incomingByte & 63) > 35)
-      {
-        // set the level
-        *levelX = (incomingByte & 31) | (incomingByte & 32 ? 224 : 0);
-        // set the motor control wires
-        digitalWrite(incomingByte & 64 ? mcPin1B : mcPin1A, (*levelX > 0 ? HIGH : LOW));
-        digitalWrite(incomingByte & 64 ? mcPin2B : mcPin2A, (*levelX < 0 ? HIGH : LOW));
-      }
-      else if ((incomingByte & 63) == 32) // xx10 0000 -> brake
+      if ((incomingByte & 63) == 0) // xx00 0000 -> float
       {
         // set the level
         *levelX = 0;
@@ -188,8 +225,23 @@ void loop()
         digitalWrite(incomingByte & 64 ? mcPin1B : mcPin1A, HIGH);
         digitalWrite(incomingByte & 64 ? mcPin2B : mcPin2A, HIGH);
       }
+      // xx01 1110, xx01 1111, xx10 0001, xx10 0010  are reserved
+      else if ((incomingByte & 63) < 29 || (incomingByte & 63) > 35)
+      {
+        // set the level (xx1x xxxx are negative and need top 3 bits filled)
+        *levelX = (incomingByte & 31) | (incomingByte & 32 ? 224 : 0);
+        // motor control wires set at end of input handling for non-stopped levels
+      }
+      else if ((incomingByte & 63) == 32) // xx10 0000 -> brake
+      {
+        // set the level
+        *levelX = 0;
+        // set the motor control wires
+        digitalWrite(incomingByte & 64 ? mcPin1B : mcPin1A, LOW);
+        digitalWrite(incomingByte & 64 ? mcPin2B : mcPin2A, LOW);
+      }
       // notify sender
-      softSerial.write(*levelX);
+      Serial.write(*levelX);
     }
 
     // Combo output mode
@@ -204,142 +256,99 @@ void loop()
       // notify sender
       maskedByte = abs(levelB >> 2) + (levelB < 0 ? 8 : 0);
       maskedByte = (maskedByte << 4) + abs(levelA >> 2) + (levelA < 0 ? 8 : 0);
-      softSerial.write(maskedByte);
+      Serial.write(maskedByte);
     }
-    
+
     // set the pwm
     pwmA = pwmLevels[min(abs(levelA), maxA)];
-    pwmPinA = levelA < 0 ? mcPin2A : mcPin1A; // drv8833
     pwmB = pwmLevels[min(abs(levelB), maxB)];
-    pwmPinB = levelB < 0 ? mcPin2B : mcPin1B; // drv8833
-    
-    // rate limit
-    serialRateLimiter = 8;
+
+    if (pwmA > 0)
+    {
+      // set the motor control wires (LOW input is HIGH output)
+      analogWrite(mcPin1A, (levelA > 0 ? (255 - pwmA) : 255));
+      analogWrite(mcPin2A, (levelA < 0 ? (255 - pwmA) : 255));
+    }
+
+    if (pwmB > 0)
+    {
+      // set the motor control wires (LOW input is HIGH output)
+      analogWrite(mcPin1B, (levelB > 0 ? (255 - pwmB) : 255));
+      analogWrite(mcPin2B, (levelB < 0 ? (255 - pwmB) : 255));
+    }
   }
-  
-  // Bitbang the PWM signals
-  bitBangPwm(pwmPinA, pwmA, pwmPinB, pwmB);
-  
-  // Decrement rate limiter
-  if (serialRateLimiter)
-    --serialRateLimiter;
-  
 }
 
 
 
-/*----------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------
+
+  comboMode handler
+
+------------------------------------------------------------------------------*/
 
 
 
-
-void comboMode(const char incomingByte, char* levelX, const char maxX, \
-                const char maskX, const char brakeX, const char floatX, \
-                const char upX, const char downX, const char ffwdX, \
-                const char frevX, const char mcPin1X, const char mcPin2X)
+void comboMode(const char incomingByte,      char*  levelX, const char    maxX, \
+               const char        maskX, const char  brakeX, const char  floatX, \
+               const char          upX, const char   downX, const char   ffwdX, \
+               const char        frevX, const char mcPin1X, const char mcPin2X)
 {
   maskedByte = incomingByte & maskX;
   // decode command
   if (maskedByte == brakeX || maskedByte == floatX)
   {
     *levelX = 0;
-  }
-  else if (maskedByte == upX)
-  {
-    if (*levelX >= 0)
-    {
-      *levelX = min((*levelX + 4) & ~3, maxX);
-    }
-    else
-    {
-      if (abs(*levelX) & 3)
-        *levelX = -(abs(*levelX) & ~3);
-      else
-        *levelX += 4;
-    }
-  }
-  else if (maskedByte == downX)
-  {
-    if (*levelX <= 0)
-    {
-      *levelX = -min((abs(*levelX) + 4) & ~3, maxX);
-    }
-    else
-    {
-      if (*levelX & 3)
-        *levelX &= ~3;
-      else
-        *levelX -= 4;
-    }
-  }
-  else if (maskedByte == ffwdX)
-  {
-    *levelX = maxX;
-  }
-  else if (maskedByte == frevX)
-  {
-    *levelX = -maxX;
-  }
-
-  // set the motor control wires
-  digitalWrite(mcPin1X, (*levelX > 0 || maskedByte == brakeX ? HIGH : LOW));
-  digitalWrite(mcPin2X, (*levelX < 0 || maskedByte == brakeX ? HIGH : LOW));
-}
-
-
-
-void bitBangPwm(char thePwmPinA, int pwmA, char thePwmPinB, int pwmB)
-{
-  // Bitbang the PWM signals
-  // turn on both channels
-  if (pwmA > 0)
-    digitalWrite(thePwmPinA, HIGH);
-  if (pwmB > 0)
-    digitalWrite(thePwmPinB, HIGH);
-  if (pwmA <= pwmB)
-  {
-    // pwmA is shorter
-    if (pwmA > 0)
-    {
-      delayMicroseconds(pwmA);
-      // channelA off
-      digitalWrite(thePwmPinA, LOW);
-    }
-    // wait the difference
-    if (pwmA != pwmB)
-    {
-      delayMicroseconds(pwmB - pwmA);
-    }
-    if (pwmB > 0)
-    {
-      // channelB off
-      digitalWrite(thePwmPinB, LOW);
-    }
-    // finish out the cycle
-    if (pwmB < uSecCyc)
-      delayMicroseconds(uSecCyc - pwmB);
+    // set the motor control wires (brake LOW, float HIGH)
+    digitalWrite(mcPin1X, (maskedByte == brakeX ? LOW : HIGH));
+    digitalWrite(mcPin2X, (maskedByte == brakeX ? LOW : HIGH));
   }
   else
   {
-    // pwmB is shorter
-    if (pwmB > 0)
+    if (maskedByte == upX)
     {
-      delayMicroseconds(pwmB);
-      // channelB off
-      digitalWrite(thePwmPinB, LOW);
+      if (*levelX >= 0)
+      {
+        *levelX = min((*levelX + 4) & ~3, maxX);
+      }
+      else
+      {
+        if (abs(*levelX) & 3)
+          *levelX = -(abs(*levelX) & ~3);
+        else
+          *levelX += 4;
+      }
     }
-    // wait the difference
-    if (pwmA != pwmB)
+    else if (maskedByte == downX)
     {
-      delayMicroseconds(pwmA - pwmB);
+      if (*levelX <= 0)
+      {
+        *levelX = -min((abs(*levelX) + 4) & ~3, maxX);
+      }
+      else
+      {
+        if (*levelX & 3)
+          *levelX &= ~3;
+        else
+          *levelX -= 4;
+      }
     }
-    if (pwmA > 0)
+    else if (maskedByte == ffwdX)
     {
-      // channelA off
-      digitalWrite(thePwmPinA, LOW);
+      *levelX = maxX;
     }
-    // finish out the cycle
-    if (pwmA < uSecCyc)
-      delayMicroseconds(uSecCyc - pwmA);
+    else if (maskedByte == frevX)
+    {
+      *levelX = -maxX;
+    }
+
+    // we have stepped back to float
+    if (*levelX == 0)
+    {
+      digitalWrite(mcPin1X, HIGH);
+      digitalWrite(mcPin2X, HIGH);
+    }
   }
+
+  // motor control wires set at end of input handling for non-stopped levels
 }
